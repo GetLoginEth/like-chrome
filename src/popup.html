@@ -1,12 +1,30 @@
+<style>
+    body {
+        width: 300px;
+    }
+
+    .active {
+        display: block;
+    }
+
+    .inactive {
+        display: none;
+    }
+</style>
 <p>Hello popup</p>
 <div id="data">---</div>
 <button id="get-user-info">Get user info</button>
 <div id="result">---</div>
+<div id="status">---</div>
 
-<!--
-
-<iframe src="https://localhost:3000/bzz:/getlogin.eth/xauthorize?client_id=1&response_type=id_token&redirect_uri=https://ya.ru/" frameborder="0"></iframe>
--->
-
+<div class="pages">
+    <div class="page inactive app_not_allowed">
+        <p>App not authorized</p>
+        <a target="_blank" id="authorize_url" href="#">Click to authorize</a>
+    </div>
+    <div class="page inactive ready">
+        CLICK here to like
+    </div>
+</div>
 
 <script src="./popup.js"></script>

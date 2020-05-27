@@ -13,7 +13,7 @@
     }
   ],
   "browser_action": {
-    "default_icon": "img/heart.png",
+    "default_icon": "img/heart-wait.png",
     "default_popup": "popup.html"
   },
 
