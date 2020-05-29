@@ -16,7 +16,6 @@
     "default_icon": "img/heart-wait.png",
     "default_popup": "popup.html"
   },
-
   "background": {
     "persistent": false,
     "page": "background.html"
@@ -24,6 +23,7 @@
   "permissions": [
     "tabs",
     "identity",
-    "background"
+    "background",
+    "storage"
   ]
 }

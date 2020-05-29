@@ -1,15 +1,14 @@
 /*console.log('popup data');*/
 const background = chrome.extension.getBackgroundPage();
 const getLoginApi = background.getLoginApi;
-const result = document.getElementById('result');
-const statusElement = document.getElementById('status');
+//const statusElement = document.getElementById('status');
 let status = 'none';
 
-setStatus(background._like_status);
+setStatus(background._like_status ? background._like_status : status);
 
 function setStatus(newStatus) {
     status = newStatus;
-    statusElement.innerText = newStatus;
+    //statusElement.innerText = newStatus;
 
     if (status === 'app_not_allowed') {
         document.getElementById('authorize_url').href = background._like_authorize_url;
@@ -24,6 +23,12 @@ function setStatus(newStatus) {
             item.classList.remove('active');
         }
     });
+}
+
+function getYoutubeId(url) {
+    var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+    var match = url.match(regExp);
+    return (match && match[1].length == 11) ? match[1] : false;
 }
 
 setInterval(_ => {
@@ -52,7 +57,29 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
     console.log(back.getLoginApi);
 }, 1000);*/
 
-document.getElementById('get-user-info').onclick = async () => {
-    const info = await getLoginApi.getUserInfo();
-    result.innerText = info.username + " | " + info.usernameHash;
-};
+document.querySelector('.like').onclick = _ => {
+    //console.log('Clicked');
+    chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        const url = tabs[0].url;
+        let resultUrl = url;
+        console.log(url);
+        const youtubeUrls = ['https://youtube.com/', 'https://youtu.be/'];
+        const isYoutube = !!youtubeUrls.find(item => url.indexOf(item) === 0);
+        const youtubeId = getYoutubeId(url);
+        if (isYoutube && youtubeId) {
+            resultUrl = `youtube:${youtubeId}`;
+        }
+
+        console.log('result url', resultUrl);
+        chrome.runtime.sendMessage({type: 'toggle_like', url: resultUrl});
+    });
+}
+document.querySelector('#resetAccessToken').onclick = _ => {
+    _.preventDefault();
+    if (confirm('Reset?')) {
+        //console.log('yes');
+        chrome.runtime.sendMessage({type: 'reset_access_token'});
+    } else {
+        //console.log('no');
+    }
+}

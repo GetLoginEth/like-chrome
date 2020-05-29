@@ -27,6 +27,7 @@ class GetLoginApi {
     }
 
     _sendMessage(accessToken, method, params = null) {
+        //console.log('received params', params);
         //console.log('call ' + method);
         if (!this.iframe) {
             throw new Error('Empty iframe');
@@ -63,6 +64,7 @@ class GetLoginApi {
                 params
             };
 
+            //console.log('message to send', message)
             this.iframe.postMessage(message, this.pluginUrl);
         });
     }

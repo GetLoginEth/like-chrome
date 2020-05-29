@@ -1,6 +1,11 @@
 <style>
     body {
-        width: 300px;
+        width: 100px;
+        height: 100px;
+    }
+
+    .pages {
+        width: 100%;
     }
 
     .active {
@@ -8,23 +13,40 @@
     }
 
     .inactive {
-        display: none;
+        display: none !important;
+    }
+
+    .ready {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .like {
+        width: 38px;
+        height: 38px;
+        cursor: pointer;
+    }
+
+    #resetAccessToken {
+        position: absolute;
+        bottom: 8px;
     }
 </style>
-<p>Hello popup</p>
-<div id="data">---</div>
-<button id="get-user-info">Get user info</button>
-<div id="result">---</div>
-<div id="status">---</div>
 
 <div class="pages">
+    <div class="page inactive none">
+        <p>None</p>
+    </div>
     <div class="page inactive app_not_allowed">
-        <p>App not authorized</p>
         <a target="_blank" id="authorize_url" href="#">Click to authorize</a>
     </div>
     <div class="page inactive ready">
-        CLICK here to like
+        <img class="like" src="img/heart.png" alt="">
     </div>
+
+    <a href="#" id="resetAccessToken">Reset token</a>
 </div>
+
 
 <script src="./popup.js"></script>
