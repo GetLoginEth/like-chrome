@@ -1088,6 +1088,7 @@ let userInfo = {};
 let cache = {};
 
 async function updateUrlInfo(url) {
+    console.log('Url', url)
     if (timeout) {
         clearTimeout(timeout);
     }
@@ -1098,6 +1099,12 @@ async function updateUrlInfo(url) {
 
     chrome.browserAction.setIcon({path: "img/heart-wait.png"});
     chrome.browserAction.setBadgeText({text: ''});
+
+    if (!url || url === 'chrome://newtab/') {
+        console.log('Empty url. Cancel receiving info')
+        return;
+    }
+
     const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
     console.log('urlHash', urlHash)
     // todo check cached likes info
@@ -1105,7 +1112,6 @@ async function updateUrlInfo(url) {
     // todo is youtube - check by youtube id
     const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
     console.log(data);
-
     if (data.isLiked) {
         chrome.browserAction.setIcon({path: "img/heart-liked.png"});
     } else {
@@ -1200,6 +1206,11 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         setStatus('app_not_allowed');
     } else if (message.type === 'toggle_like' && message.url) {
         const url = message.url;
+        if (!url || url === 'chrome://newtab/') {
+            console.log('Empty url. Like canceled');
+            return;
+        }
+
         const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
         console.log('Like url', url, 'hash', urlHash);
         const response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})

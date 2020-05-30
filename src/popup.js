@@ -1,10 +1,5 @@
-/*console.log('popup data');*/
 const background = chrome.extension.getBackgroundPage();
-const getLoginApi = background.getLoginApi;
-//const statusElement = document.getElementById('status');
 let status = 'none';
-
-setStatus(background._like_status ? background._like_status : status);
 
 function setStatus(newStatus) {
     status = newStatus;
@@ -31,7 +26,9 @@ function getYoutubeId(url) {
     return (match && match[1].length == 11) ? match[1] : false;
 }
 
+setStatus(background._like_status ? background._like_status : status);
 setInterval(_ => {
+    // todo change behaviour to events?
     if (status === background._like_status) {
         return;
     }
@@ -39,23 +36,12 @@ setInterval(_ => {
     setStatus(background._like_status);
 }, 1000);
 chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
-    //console.log(message);
     //console.log(message, messageSender, sendResponse);
-    //document.getElementById('data').innerText = message.msg;
-    // message is the message you sent, probably an object
-    // messageSender is an object that contains info about the context that sent the message
-    // sendResponse is a function to run when you have a response
     /*if (message.type === 'status') {
         status = message.data;
         statusElement.innerText = status;
     }*/
 });
-
-/*setInterval(_ => {
-    chrome.runtime.sendMessage({msg: 'hello from POPUP ' + Math.random()});
-    const back = chrome.extension.getBackgroundPage();
-    console.log(back.getLoginApi);
-}, 1000);*/
 
 document.querySelector('.like').onclick = _ => {
     //console.log('Clicked');
@@ -77,9 +63,7 @@ document.querySelector('.like').onclick = _ => {
 document.querySelector('#resetAccessToken').onclick = _ => {
     _.preventDefault();
     if (confirm('Reset?')) {
-        //console.log('yes');
         chrome.runtime.sendMessage({type: 'reset_access_token'});
-    } else {
-        //console.log('no');
+        setStatus('app_not_allowed');
     }
 }
