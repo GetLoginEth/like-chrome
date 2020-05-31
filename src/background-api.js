@@ -1213,7 +1213,13 @@ function onReceiveUrlInfo(url, tabId) {
 
             }
 
-            onKeyValueReceived();
+            onKeyValueReceived()
+                .then(_ => {
+                    chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+                        const url = tabs[0].url;
+                        updateUrlInfo(url);
+                    });
+                });
         } catch (e) {
             console.error(e);
         }
