@@ -3,6 +3,7 @@ let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
 let redirectUrl = chrome.identity.getRedirectURL();
 let accessToken = null;
 
+const appId = 3;
 const likeLogicAbi = [
     {
         "inputs": [
@@ -1131,7 +1132,7 @@ function setState(newState) {
 function parseAndSetAccessToken(fullUrl) {
     const url = new URL(fullUrl);
     const params = new URLSearchParams(url.hash.replace('#', ''));
-    const accessToken = params.get('access_token');
+    accessToken = params.get('access_token');
     const userId = params.get('user_id');
     if (accessToken && accessToken.length === 66) {
         console.log('Set access_token', accessToken);
@@ -1147,7 +1148,8 @@ async function onKeyValueReceived() {
         accessToken = null;
     }
 
-    const data = (await instance.init(3, getLoginUrl, redirectUrl, accessToken)).data;
+    instance.resetInit();
+    const data = (await instance.init(appId, getLoginUrl, redirectUrl, accessToken)).data;
     console.log('init response', data);
     if (data.is_client_allowed) {
         setStatus(STATUS_READY);
@@ -1183,7 +1185,7 @@ function onReceiveUrlInfo(url, tabId) {
 
             }
 
-            setStatus(STATUS_READY);
+            onKeyValueReceived();
         } catch (e) {
             console.error(e);
         }
@@ -1191,6 +1193,8 @@ function onReceiveUrlInfo(url, tabId) {
 
     if (isGetLoginLoaded) {
         updateUrlInfo(url);
+    } else {
+        console.log('Getlogin deactivated');
     }
 }
 
@@ -1223,6 +1227,8 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
     const type = message.type;
     if (type === TYPE_RESET_ACCESS_TOKEN) {
         chrome.storage.sync.set({accessToken: null, userId: null});
+        isGetLoginLoaded = false;
+        isWaitAccessToken = true;
         resetBadge();
         setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
     } else if (type === TYPE_TOGGLE_LIKE && message.url) {

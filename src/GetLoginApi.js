@@ -98,6 +98,14 @@ class GetLoginApi {
         return `${this.authUrl}?client_id=${appId}&response_type=id_token&redirect_uri=${redirectUrl}`;
     }
 
+    resetInit() {
+        if (this.iframe) {
+            this.iframe = null;
+        }
+
+        this.isInitInProgress = false;
+    }
+
     async init(appId, baseApiUrl, redirectUrl, accessToken = null) {
         [appId, baseApiUrl, redirectUrl].forEach(item => {
             if (!item) {
@@ -218,10 +226,6 @@ class GetLoginApi {
     }
 }
 
-// todo old init way. Check and optimize it with new way
-window.getLoginApi = new GetLoginApi();
-// new way
-// todo init when iframe loaded?
 if (window && window._onGetLoginApiLoaded) {
     window._onGetLoginApiLoaded(window.getLoginApi);
     delete window._onGetLoginApiLoaded;
