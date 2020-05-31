@@ -19,26 +19,11 @@ function setStatus(newStatus, data = {}) {
     });
 }
 
-function getYoutubeId(url) {
-    var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
-    var match = url.match(regExp);
-    return (match && match[1].length == 11) ? match[1] : false;
-}
-
 function onLike() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         const url = tabs[0].url;
-        let resultUrl = url;
-        console.log(url);
-        const youtubeUrls = ['https://youtube.com/', 'https://youtu.be/'];
-        const isYoutube = !!youtubeUrls.find(item => url.indexOf(item) === 0);
-        const youtubeId = getYoutubeId(url);
-        if (isYoutube && youtubeId) {
-            resultUrl = `youtube:${youtubeId}`;
-        }
-
-        console.log('result url', resultUrl);
-        chrome.runtime.sendMessage({type: TYPE_TOGGLE_LIKE, url: resultUrl});
+        console.log('result url', url);
+        chrome.runtime.sendMessage({type: TYPE_TOGGLE_LIKE, url});
     });
 }
 

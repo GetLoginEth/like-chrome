@@ -1095,7 +1095,28 @@ function resetBadge() {
     chrome.browserAction.setBadgeText({text: ''});
 }
 
+function prepareUrl(url) {
+    let resultUrl = url;
+    const youtubeUrls = ['https://youtube.com/', 'https://www.youtube.com/', 'https://youtu.be/', 'https://www.youtu.be/'];
+    const isYoutube = !!youtubeUrls.find(item => url.indexOf(item) === 0);
+    const youtubeId = getYoutubeId(url);
+    if (isYoutube && youtubeId) {
+        resultUrl = `youtube:${youtubeId}`;
+    }
+
+    console.log('result url', resultUrl);
+
+    return resultUrl;
+}
+
+function getYoutubeId(url) {
+    var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+    var match = url.match(regExp);
+    return (match && match[1].length == 11) ? match[1] : false;
+}
+
 async function updateUrlInfo(url) {
+    url = prepareUrl(url);
     console.log('Url', url)
     if (timeout) {
         clearTimeout(timeout);
@@ -1109,10 +1130,7 @@ async function updateUrlInfo(url) {
     }
 
     const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
-    console.log('urlHash', urlHash)
-    // todo check cached likes info
-    // todo get url hash for not youtube ang receive info
-    // todo is youtube - check by youtube id
+    console.log('urlHash', urlHash);
     const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
     console.log(data);
     setState({...state, currentPageInfo: {isLiked: data.isLiked}});
@@ -1242,7 +1260,7 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         resetBadge();
         setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
     } else if (type === TYPE_TOGGLE_LIKE && message.url) {
-        const url = message.url;
+        const url = prepareUrl(message.url);
         if (!url || url === 'chrome://newtab/') {
             console.log('Empty url. Like canceled');
             return;
