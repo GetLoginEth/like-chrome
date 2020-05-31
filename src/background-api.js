@@ -1,6 +1,7 @@
 const backgroundWindow = chrome.extension.getBackgroundPage();
 let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
-let redirectUrl = chrome.identity.getRedirectURL();
+//let redirectUrl = chrome.identity.getRedirectURL();
+let redirectUrl = 'https://example.com/';
 let accessToken = null;
 
 const appId = 3;
