@@ -1,12 +1,11 @@
-const background = chrome.extension.getBackgroundPage();
-let status = 'none';
+//const background = chrome.extension.getBackgroundPage();
+let state = {};
 
-function setStatus(newStatus) {
+function setStatus(newStatus, data = {}) {
     status = newStatus;
-    //statusElement.innerText = newStatus;
 
-    if (status === 'app_not_allowed') {
-        document.getElementById('authorize_url').href = background._like_authorize_url;
+    if (status === STATUS_APP_NOT_ALLOWED) {
+        document.getElementById('authorize_url').href = data.url;
     }
 
     document.querySelectorAll('.page').forEach(item => {
@@ -26,25 +25,7 @@ function getYoutubeId(url) {
     return (match && match[1].length == 11) ? match[1] : false;
 }
 
-setStatus(background._like_status ? background._like_status : status);
-setInterval(_ => {
-    // todo change behaviour to events?
-    if (status === background._like_status) {
-        return;
-    }
-
-    setStatus(background._like_status);
-}, 1000);
-chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
-    //console.log(message, messageSender, sendResponse);
-    /*if (message.type === 'status') {
-        status = message.data;
-        statusElement.innerText = status;
-    }*/
-});
-
-document.querySelector('.like').onclick = _ => {
-    //console.log('Clicked');
+function onLike() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         const url = tabs[0].url;
         let resultUrl = url;
@@ -57,13 +38,28 @@ document.querySelector('.like').onclick = _ => {
         }
 
         console.log('result url', resultUrl);
-        chrome.runtime.sendMessage({type: 'toggle_like', url: resultUrl});
+        chrome.runtime.sendMessage({type: TYPE_TOGGLE_LIKE, url: resultUrl});
     });
 }
-document.querySelector('#resetAccessToken').onclick = _ => {
-    _.preventDefault();
+
+function onResetAccessToken(e) {
+    e.preventDefault();
     if (confirm('Reset?')) {
-        chrome.runtime.sendMessage({type: 'reset_access_token'});
-        setStatus('app_not_allowed');
+        chrome.runtime.sendMessage({type: TYPE_RESET_ACCESS_TOKEN});
+        setStatus(STATUS_APP_NOT_ALLOWED);
     }
 }
+
+chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
+    console.log(message, messageSender, sendResponse);
+    if (message.type === TYPE_UPDATE_STATE) {
+        state = message.data;
+        setStatus(message.data.status, message.data.status_data);
+    }
+});
+
+document.querySelector('.like').onclick = onLike;
+document.querySelector('#resetAccessToken').onclick = onResetAccessToken;
+
+setStatus(STATUS_NONE);
+chrome.runtime.sendMessage({type: TYPE_GET_STATE});

@@ -1,7 +1,5 @@
 const backgroundWindow = chrome.extension.getBackgroundPage();
-//let getLoginApiUrl = "https://localhost:3000/api/last.js";
 let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
-//let redirectUrl = 'https://localhost:1234/token.html';
 let redirectUrl = chrome.identity.getRedirectURL();
 let accessToken = null;
 
@@ -1079,13 +1077,18 @@ const likeStorageAbi = [
 ];
 const likeStorageAddress = '0x6A7c14bD5384e2eb8515a5B7298cF1ec5d63aD59';
 let likeLogicAddress = null;
-let activeUrl = '';
 let isGetLoginLoaded = false;
 let timeout = null;
 let isWaitAccessToken = false;
-let status = '';
 let userInfo = {};
-let cache = {};
+let state = {};
+// for preventing double loading while one url loaded
+let currentUrl = '';
+
+function resetBadge() {
+    chrome.browserAction.setIcon({path: "img/heart-wait.png"});
+    chrome.browserAction.setBadgeText({text: ''});
+}
 
 async function updateUrlInfo(url) {
     console.log('Url', url)
@@ -1093,12 +1096,7 @@ async function updateUrlInfo(url) {
         clearTimeout(timeout);
     }
 
-    if (cache[url]) {
-        // todo get cache info
-    }
-
-    chrome.browserAction.setIcon({path: "img/heart-wait.png"});
-    chrome.browserAction.setBadgeText({text: ''});
+    resetBadge();
 
     if (!url || url === 'chrome://newtab/') {
         console.log('Empty url. Cancel receiving info')
@@ -1121,9 +1119,13 @@ async function updateUrlInfo(url) {
     chrome.browserAction.setBadgeText({text: String(data.resourceStatistics.reactions)});
 }
 
-function setStatus(appStatus) {
-    status = appStatus;
-    window._like_status = status;
+function setStatus(status, data = {}) {
+    setState({...state, status, status_data: data});
+}
+
+function setState(newState) {
+    state = newState;
+    chrome.runtime.sendMessage({type: TYPE_UPDATE_STATE, data: state});
 }
 
 function parseAndSetAccessToken(fullUrl) {
@@ -1132,6 +1134,7 @@ function parseAndSetAccessToken(fullUrl) {
     const accessToken = params.get('access_token');
     const userId = params.get('user_id');
     if (accessToken && accessToken.length === 66) {
+        console.log('Set access_token', accessToken);
         chrome.storage.sync.set({accessToken, userId});
     } else {
         throw new Error('Access token incorrect size');
@@ -1147,11 +1150,11 @@ async function onKeyValueReceived() {
     const data = (await instance.init(3, getLoginUrl, redirectUrl, accessToken)).data;
     console.log('init response', data);
     if (data.is_client_allowed) {
-        setStatus('ready');
+        setStatus(STATUS_READY);
     } else {
-        window._like_authorize_url = data.authorize_url;
         isWaitAccessToken = true;
-        setStatus('app_not_allowed');
+        setStatus(STATUS_APP_NOT_ALLOWED, {url: data.authorize_url});
+
         return;
     }
 
@@ -1161,12 +1164,38 @@ async function onKeyValueReceived() {
     console.log('likeLogicAddress', likeLogicAddress);
     isGetLoginLoaded = true;
     userInfo = await instance.getUserInfo();
-    //updateUrlInfo(activeUrl);
+}
+
+function onReceiveUrlInfo(url, tabId) {
+    if (currentUrl === url) {
+        console.log('Current url the same. Cancel receiving info');
+        return;
+    }
+
+    currentUrl = url;
+    if (isWaitAccessToken && url.indexOf(redirectUrl) === 0) {
+        console.log('onReceiveUrlInfo - url', url)
+        try {
+            parseAndSetAccessToken(url);
+            try {
+                chrome.tabs.remove(tabId);
+            } catch (e) {
+
+            }
+
+            setStatus(STATUS_READY);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    if (isGetLoginLoaded) {
+        updateUrlInfo(url);
+    }
 }
 
 backgroundWindow._onGetLoginApiLoaded = async (instance) => {
     backgroundWindow.getLoginApi = instance;
-
     chrome.storage.sync.get(['accessToken'], function (result) {
         console.log(result);
         accessToken = result.accessToken;
@@ -1177,34 +1206,26 @@ backgroundWindow._onGetLoginApiLoaded = async (instance) => {
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     chrome.tabs.get(activeInfo.tabId, function (tab) {
-        activeUrl = tab.url;
+        console.log('Activated tab', tab);
+        onReceiveUrlInfo(tab.url, tab.id);
+    });
+});
 
-        if (isWaitAccessToken && activeUrl.indexOf(redirectUrl) === 0) {
-            try {
-                parseAndSetAccessToken(activeUrl);
-                try {
-                    chrome.tabs.remove(tab.id);
-                } catch (e) {
-
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        if (isGetLoginLoaded) {
-            updateUrlInfo(activeUrl);
-        }
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    chrome.tabs.get(tabId, function (tab) {
+        console.log('Updated tab', tab);
+        onReceiveUrlInfo(tab.url, tabId);
     });
 });
 
 chrome.extension.onMessage.addListener(async function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
-    if (message.type === 'reset_access_token') {
+    const type = message.type;
+    if (type === TYPE_RESET_ACCESS_TOKEN) {
         chrome.storage.sync.set({accessToken: null, userId: null});
-        window._like_authorize_url = backgroundWindow.getLoginApi.getAuthorizeUrl();
-        setStatus('app_not_allowed');
-    } else if (message.type === 'toggle_like' && message.url) {
+        resetBadge();
+        setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
+    } else if (type === TYPE_TOGGLE_LIKE && message.url) {
         const url = message.url;
         if (!url || url === 'chrome://newtab/') {
             console.log('Empty url. Like canceled');
@@ -1215,7 +1236,9 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         console.log('Like url', url, 'hash', urlHash);
         const response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
         console.log('response', response);
+    } else if (type === TYPE_GET_STATE) {
+        setState(state);
     }
 });
 
-setStatus('wait_getlogin');
+setStatus(STATUS_WAIT_GETLOGIN);
