@@ -1082,7 +1082,9 @@ let isGetLoginLoaded = false;
 let timeout = null;
 let isWaitAccessToken = false;
 let userInfo = {};
-let state = {};
+let state = {
+    currentPageInfo: {}
+};
 // for preventing double loading while one url loaded
 let currentUrl = '';
 
@@ -1111,6 +1113,7 @@ async function updateUrlInfo(url) {
     // todo is youtube - check by youtube id
     const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
     console.log(data);
+    setState({...state, currentPageInfo: {isLiked: data.isLiked}});
     if (data.isLiked) {
         chrome.browserAction.setIcon({path: "img/heart-liked.png"});
     } else {
@@ -1144,6 +1147,11 @@ function parseAndSetAccessToken(fullUrl) {
 
 async function onKeyValueReceived() {
     const instance = backgroundWindow.getLoginApi;
+    if (!instance) {
+        console.log('GetLogin instance not found');
+        return;
+    }
+
     if (!accessToken) {
         accessToken = null;
     }
@@ -1238,9 +1246,16 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
             return;
         }
 
+        setState({...state, currentPageInfo: {isLiked: !state.currentPageInfo.isLiked}});
         const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
-        console.log('Like url', url, 'hash', urlHash);
-        const response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        //console.log('Like url', url, 'hash', urlHash);
+        const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+        let response = {};
+        if (data.isLiked) {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+        } else {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        }
         console.log('response', response);
     } else if (type === TYPE_GET_STATE) {
         setState(state);

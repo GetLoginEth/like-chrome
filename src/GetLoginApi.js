@@ -27,8 +27,6 @@ class GetLoginApi {
     }
 
     _sendMessage(accessToken, method, params = null) {
-        //console.log('received params', params);
-        //console.log('call ' + method);
         if (!this.iframe) {
             throw new Error('Empty iframe');
         }
@@ -64,7 +62,6 @@ class GetLoginApi {
                 params
             };
 
-            //console.log('message to send', message)
             this.iframe.postMessage(message, this.pluginUrl);
         });
     }
@@ -227,6 +224,6 @@ class GetLoginApi {
 }
 
 if (window && window._onGetLoginApiLoaded) {
-    window._onGetLoginApiLoaded(window.getLoginApi);
+    window._onGetLoginApiLoaded(new GetLoginApi());
     delete window._onGetLoginApiLoaded;
 }

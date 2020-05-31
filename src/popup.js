@@ -54,7 +54,10 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
     console.log(message, messageSender, sendResponse);
     if (message.type === TYPE_UPDATE_STATE) {
         state = message.data;
-        setStatus(message.data.status, message.data.status_data);
+        setStatus(state.status, state.status_data);
+        if (state.currentPageInfo) {
+            document.querySelector('.like').setAttribute('src', state.currentPageInfo.isLiked ? 'img/heart-liked.png' : 'img/heart.png');
+        }
     }
 });
 
