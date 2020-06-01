@@ -9,5 +9,9 @@ In the extension, the definition of the YouTube video identifier is implemented 
 To use the extension, you must have an account in [GetLogin](https://github.com/GetLoginEth/login)
 ### How to install?
 
+Download and install src.crx file
+
+OR
+
 1) Clone this repository to you machine
 2) Open Chrome -> More Tools -> Extensions -> Load unpacked -> Select ./like-chrome/src directory
