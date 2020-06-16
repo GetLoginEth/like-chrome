@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@getlogin/like": "https://github.com/GetLoginEth/like.git"
+  }
+}
