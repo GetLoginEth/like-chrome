@@ -1,4 +1,13 @@
 //const background = chrome.extension.getBackgroundPage();
+import {
+    STATUS_APP_NOT_ALLOWED,
+    STATUS_NONE,
+    TYPE_GET_STATE,
+    TYPE_RESET_ACCESS_TOKEN,
+    TYPE_TOGGLE_LIKE,
+    TYPE_UPDATE_STATE
+} from "./consts";
+
 let state = {};
 
 function setStatus(newStatus, data = {}) {
