@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "webpack-dev-server --mode development --hot",
-    "build": "webpack --mode production",
+    "build": "webpack --mode development",
     "deploy": "webpack --mode production && cd build && tar cf build.tar . && mv build.tar ../build.tar && cd .. && curl -X POST -H \"Content-Type: application/x-tar\" --data-binary @build.tar https://swarm-gateways.net/bzz:/ > hash.txt"
   },
   "dependencies": {

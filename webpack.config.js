@@ -5,6 +5,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: "production",
+    devtool: 'source-map',
     entry: {
         background: './src/background.js',
         'background-api': './src/background-api.js',
@@ -37,6 +38,7 @@ module.exports = {
                 {from: 'src/manifest.json', to: '',},
             ],
         }),
+        // new webpack.SourceMapDevToolPlugin({})
     ],
     devServer: {
         contentBase: path.join(__dirname, 'build'),

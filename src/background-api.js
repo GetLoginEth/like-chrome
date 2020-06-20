@@ -12,14 +12,15 @@ import likeLogic from '@getlogin/like/web/LikeLogicAbi.json';
 import likeStorage from '@getlogin/like/web/LikeStorageAbi.json';
 
 const backgroundWindow = chrome.extension.getBackgroundPage();
-let getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
-let redirectUrl = 'https://example.com/';
-let accessToken = null;
-
+const getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
+const redirectUrl = 'https://example.com/';
+const youtubeResourceTypeId = 1;
 const appId = 3;
 const likeLogicAbi = likeLogic.abi;
 const likeStorageAbi = likeStorage.abi;
 const likeStorageAddress = likeStorage.address;
+
+let accessToken = null;
 let likeLogicAddress = null;
 let isGetLoginLoaded = false;
 let timeout = null;
@@ -67,7 +68,16 @@ async function updateUrlInfo(url) {
 
     const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
     console.log('urlHash', urlHash);
-    const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+    let data;
+    if (isYoutubeUrl(url)) {
+        const id = getYoutubeId(url);
+        const idHash = await backgroundWindow.getLoginApi.keccak256(id);
+        console.log('youtube id hash', id, idHash);
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', userInfo.usernameHash, youtubeResourceTypeId, idHash);
+    } else {
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+    }
+
     console.log(data);
     setState({...state, currentPageInfo: {isLiked: data.isLiked}});
     if (data.isLiked) {
@@ -181,7 +191,6 @@ function resetAccessToken() {
 }
 
 async function toggleLike(message) {
-    //const url = prepareUrl(message.url);
     const url = message.url;
     if (isBadUrl(url)) {
         console.log('Empty url. Like canceled');
@@ -190,17 +199,27 @@ async function toggleLike(message) {
 
     setState({...state, currentPageInfo: {isLiked: !state.currentPageInfo.isLiked}});
     const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
-    //console.log('Like url', url, 'hash', urlHash);
-    const isYoutubeUrl = isYoutubeUrl(url);
-
-    const getMethod = isYoutubeUrl ? 'getResourceIdStatistics' : 'getUserStatisticsUrl';
-    const data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, getMethod, userInfo.usernameHash, urlHash);
+    let data;
     let response = {};
-    if (data.isLiked) {
-        response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+
+    if (isYoutubeUrl(url)) {
+        const id = getYoutubeId(url);
+        const idHash = await backgroundWindow.getLoginApi.keccak256(id);
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', userInfo.usernameHash, youtubeResourceTypeId, idHash);
+        if (data.isLiked) {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlike', [youtubeResourceTypeId, idHash], {resolveMethod: 'mined'})
+        } else {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'like', [youtubeResourceTypeId, idHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        }
     } else {
-        response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+        if (data.isLiked) {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+        } else {
+            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        }
     }
+
     console.log('response', response);
 }
 
@@ -221,8 +240,12 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     });
 });
 
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(function (tabId) {
     chrome.tabs.get(tabId, function (tab) {
+        if (!tab) {
+            return;
+        }
+
         console.log('Updated tab', tab);
         onReceiveUrlInfo(tab.url, tabId);
     });
@@ -234,7 +257,7 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
     if (type === TYPE_RESET_ACCESS_TOKEN) {
         resetAccessToken();
     } else if (type === TYPE_TOGGLE_LIKE && message.url) {
-        toggleLike(message).then();
+        toggleLike(message);
     } else if (type === TYPE_GET_STATE) {
         setState(state);
     }
