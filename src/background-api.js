@@ -1,6 +1,6 @@
 import {
     STATUS_APP_NOT_ALLOWED,
-    STATUS_READY,
+    STATUS_APP_ALLOWED,
     STATUS_WAIT_GETLOGIN,
     TYPE_GET_STATE,
     TYPE_RESET_ACCESS_TOKEN,
@@ -22,9 +22,7 @@ const likeStorageAddress = likeStorage.address;
 
 let accessToken = null;
 let likeLogicAddress = null;
-let isGetLoginLoaded = false;
 let timeout = null;
-let isWaitAccessToken = false;
 let userInfo = {};
 let state = {
     currentPageInfo: {}
@@ -69,13 +67,24 @@ async function updateUrlInfo(url) {
     const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
     console.log('urlHash', urlHash);
     let data;
+    let usernameHash;
+    if (getStatus() === STATUS_APP_ALLOWED && userInfo.usernameHash) {
+        usernameHash = userInfo.usernameHash
+    } else if (getStatus() === STATUS_APP_NOT_ALLOWED) {
+        usernameHash = '0x000000000000000000000000000000000000000000000000000000';
+    } else {
+        console.log('App status is not correct to receive like info', getStatus());
+        return;
+    }
+
+    backgroundWindow.getLoginApi.setClientAbi(likeLogicAbi);
     if (isYoutubeUrl(url)) {
         const id = getYoutubeId(url);
         const idHash = await backgroundWindow.getLoginApi.keccak256(id);
         console.log('youtube id hash', id, idHash);
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', userInfo.usernameHash, youtubeResourceTypeId, idHash);
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', usernameHash, youtubeResourceTypeId, idHash);
     } else {
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
     }
 
     console.log(data);
@@ -91,6 +100,10 @@ async function updateUrlInfo(url) {
 
 function setStatus(status, data = {}) {
     setState({...state, status, status_data: data});
+}
+
+function getStatus() {
+    return state.status;
 }
 
 function setState(newState) {
@@ -111,45 +124,8 @@ function parseAndSetAccessToken(fullUrl) {
     }
 }
 
-async function onKeyValueReceived() {
-    const instance = backgroundWindow.getLoginApi;
-    if (!instance) {
-        console.log('GetLogin instance not found');
-        return;
-    }
-
-    if (!accessToken) {
-        accessToken = null;
-    }
-
-    instance.resetInit();
-    const data = (await instance.init(appId, getLoginUrl, redirectUrl, accessToken)).data;
-    console.log('init response', data);
-    if (data.is_client_allowed) {
-        setStatus(STATUS_READY);
-    } else {
-        isWaitAccessToken = true;
-        setStatus(STATUS_APP_NOT_ALLOWED, {url: data.authorize_url});
-
-        return;
-    }
-
-    instance.setClientAbi(likeStorageAbi);
-    likeLogicAddress = await instance.callContractMethod(likeStorageAddress, 'logicAddress');
-    instance.setClientAbi(likeLogicAbi);
-    console.log('likeLogicAddress', likeLogicAddress);
-    isGetLoginLoaded = true;
-    userInfo = await instance.getUserInfo();
-}
-
-function onReceiveUrlInfo(url, tabId) {
-    if (currentUrl === url) {
-        console.log('Current url the same. Cancel receiving info');
-        return;
-    }
-
-    currentUrl = url;
-    if (isWaitAccessToken && url.indexOf(redirectUrl) === 0) {
+function checkAndStoreAccessToken(url) {
+    if (getStatus() === STATUS_APP_NOT_ALLOWED && url.indexOf(redirectUrl) === 0) {
         console.log('onReceiveUrlInfo - url', url)
         try {
             parseAndSetAccessToken(url);
@@ -159,7 +135,7 @@ function onReceiveUrlInfo(url, tabId) {
 
             }
 
-            onKeyValueReceived()
+            getLoginInit()
                 .then(_ => {
                     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
                         if (tabs.length === 0) {
@@ -167,25 +143,29 @@ function onReceiveUrlInfo(url, tabId) {
                         }
 
                         const url = tabs[0].url;
-                        updateUrlInfo(url);
+                        updateUrlInfo(url).then();
                     });
                 });
         } catch (e) {
             console.error(e);
         }
     }
+}
 
-    if (isGetLoginLoaded) {
-        updateUrlInfo(url);
-    } else {
-        console.log('Getlogin deactivated');
+function onReceiveUrlInfo(url, tabId) {
+    if (currentUrl === url) {
+        console.log('Current url the same. Cancel receiving info');
+        return;
     }
+
+    currentUrl = url;
+    checkAndStoreAccessToken(url);
+
+    updateUrlInfo(url).then();
 }
 
 function resetAccessToken() {
     chrome.storage.sync.set({accessToken: null, userId: null});
-    isGetLoginLoaded = false;
-    isWaitAccessToken = true;
     resetBadge();
     setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
 }
@@ -223,16 +203,46 @@ async function toggleLike(message) {
     console.log('response', response);
 }
 
+async function getLoginInit() {
+    const instance = backgroundWindow.getLoginApi;
+    if (!instance) {
+        console.log('GetLogin instance not found');
+        return;
+    }
+
+    if (!accessToken) {
+        accessToken = null;
+    }
+
+    instance.resetInit();
+    const data = (await instance.init(appId, getLoginUrl, redirectUrl, accessToken)).data;
+    console.log('init response', data);
+    instance.setClientAbi(likeStorageAbi);
+    likeLogicAddress = await instance.callContractMethod(likeStorageAddress, 'logicAddress');
+    instance.setClientAbi(likeLogicAbi);
+    console.log('likeLogicAddress', likeLogicAddress);
+    userInfo = await instance.getUserInfo();
+
+    if (data.is_client_allowed) {
+        setStatus(STATUS_APP_ALLOWED);
+    } else {
+        setStatus(STATUS_APP_NOT_ALLOWED, {url: data.authorize_url});
+    }
+}
+
+// when GetLogin loaded, but not init
 backgroundWindow._onGetLoginApiLoaded = async (instance) => {
     backgroundWindow.getLoginApi = instance;
     chrome.storage.sync.get(['accessToken'], function (result) {
         console.log(result);
         accessToken = result.accessToken;
         console.log('accessToken', accessToken);
-        onKeyValueReceived();
+        getLoginInit();
     });
 };
 
+// todo check why info updated when not active tab updated (for example, yandex music)
+// fires when the active tab in a window changes
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     chrome.tabs.get(activeInfo.tabId, function (tab) {
         console.log('Activated tab', tab);
@@ -240,6 +250,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     });
 });
 
+// when a tab is updated
 chrome.tabs.onUpdated.addListener(function (tabId) {
     chrome.tabs.get(tabId, function (tab) {
         if (!tab) {
@@ -251,6 +262,7 @@ chrome.tabs.onUpdated.addListener(function (tabId) {
     });
 });
 
+// receive messages from UI
 chrome.extension.onMessage.addListener(async function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
     const type = message.type;

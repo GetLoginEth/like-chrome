@@ -1,7 +1,7 @@
 export const STATUS_NONE = 'none';
 export const STATUS_WAIT_GETLOGIN = 'wait_getlogin';
 export const STATUS_APP_NOT_ALLOWED = 'app_not_allowed';
-export const STATUS_READY = 'ready';
+export const STATUS_APP_ALLOWED = 'app_allowed';
 
 export const TYPE_GET_STATE = 'get_state';
 export const TYPE_UPDATE_STATE = 'update_state';
