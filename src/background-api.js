@@ -53,6 +53,11 @@ function getYoutubeId(url) {
 async function updateUrlInfo(url) {
     //url = prepareUrl(url);
     const getLoginApi = backgroundWindow.getLoginApi;
+    if (!getLoginApi.isReady()) {
+        console.log('getLogin not ready');
+        return;
+    }
+
     console.log('Url', url)
     if (timeout) {
         clearTimeout(timeout);
@@ -125,19 +130,31 @@ function parseAndSetAccessToken(fullUrl) {
     }
 }
 
-function checkAndStoreAccessToken(url) {
+function checkAndStoreAccessToken(url, tabId) {
     if (getStatus() === STATUS_APP_NOT_ALLOWED && url.indexOf(redirectUrl) === 0) {
         console.log('onReceiveUrlInfo - url', url)
         try {
             parseAndSetAccessToken(url);
             try {
-                chrome.tabs.remove(tabId);
+                //console.log('Try to remove tab', tabId);
+
+                /*function callback(entry) {
+                    console.log('remove callback', entry, chrome.runtime.lastError);
+                    if (chrome.runtime.lastError) {
+                        console.log(chrome.runtime.lastError.message);
+                    } else {
+                        // Tab exists
+                    }
+                }*/
+
+                chrome.tabs.remove(tabId/*, callback*/);
             } catch (e) {
 
             }
 
             getLoginInit()
                 .then(_ => {
+                    console.log('tab query here');
                     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
                         if (tabs.length === 0) {
                             return;
@@ -150,7 +167,11 @@ function checkAndStoreAccessToken(url) {
         } catch (e) {
             console.error(e);
         }
+
+        return true;
     }
+
+    return false;
 }
 
 function onReceiveUrlInfo(url, tabId) {
@@ -160,7 +181,10 @@ function onReceiveUrlInfo(url, tabId) {
     }
 
     currentUrl = url;
-    checkAndStoreAccessToken(url);
+    if (checkAndStoreAccessToken(url, tabId)) {
+        return;
+    }
+
     updateUrlInfo(url).then();
 }
 
@@ -172,6 +196,7 @@ function resetAccessToken() {
 
 // todo change browser icon liked/unliked immediatly + increase counter
 async function toggleLike(message) {
+    const getLoginApi = backgroundWindow.getLoginApi;
     const url = message.url;
     if (isBadUrl(url)) {
         console.log('Empty url. Like canceled');
@@ -179,25 +204,25 @@ async function toggleLike(message) {
     }
 
     setState({...state, currentPageInfo: {isLiked: !state.currentPageInfo.isLiked}});
-    const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
+    const urlHash = await getLoginApi.keccak256(url);
     let data;
     let response = {};
 
     if (isYoutubeUrl(url)) {
         const id = getYoutubeId(url);
-        const idHash = await backgroundWindow.getLoginApi.keccak256(id);
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', userInfo.usernameHash, youtubeResourceTypeId, idHash);
+        const idHash = await getLoginApi.keccak256(id);
+        data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', userInfo.usernameHash, youtubeResourceTypeId, idHash);
         if (data.isLiked) {
-            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlike', [youtubeResourceTypeId, idHash], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'unlike', [youtubeResourceTypeId, idHash], {resolveMethod: 'mined'})
         } else {
-            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'like', [youtubeResourceTypeId, idHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'like', [youtubeResourceTypeId, idHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
         }
     } else {
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
+        data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
         if (data.isLiked) {
-            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
         } else {
-            response = await backgroundWindow.getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
         }
     }
 
