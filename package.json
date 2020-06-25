@@ -1,5 +1,6 @@
 {
   "name": "@getlogin/like-chrome",
+  "license": "MIT",
   "version": "1.0.0",
   "scripts": {
     "start": "webpack-dev-server --mode development --hot",
