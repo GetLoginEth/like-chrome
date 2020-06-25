@@ -12,9 +12,12 @@ let state = {};
 
 function setStatus(newStatus, data = {}) {
     status = newStatus;
-
+    console.log('New status', newStatus);
     if (status === STATUS_APP_NOT_ALLOWED) {
         document.getElementById('authorize_url').href = data.url;
+        document.getElementById('resetAccessToken').style.display = 'none';
+    } else {
+        document.getElementById('resetAccessToken').style.display = 'block';
     }
 
     document.querySelectorAll('.page').forEach(item => {
@@ -50,7 +53,7 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
         state = message.data;
         setStatus(state.status, state.status_data);
         if (state.currentPageInfo) {
-            document.querySelector('.like').setAttribute('src', state.currentPageInfo.isLiked ? 'img/heart-liked.png' : 'img/heart.png');
+            document.querySelector('.like').setAttribute('src', state.currentPageInfo.isLiked ? 'img/heart-full-liked.png' : 'img/heart-full.png');
         }
     }
 });

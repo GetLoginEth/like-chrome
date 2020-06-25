@@ -16,21 +16,46 @@
         display: none !important;
     }
 
-    .ready {
+    .app_allowed {
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .like {
-        width: 38px;
-        height: 38px;
+        width: 60px;
+        height: 60px;
         cursor: pointer;
     }
 
     #resetAccessToken {
         position: absolute;
         bottom: 8px;
+    }
+
+    .btn {
+        border-radius: 2px;
+        border: none;
+        padding: 5px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 0.75rem;
+        background-color: white;
+        color: black;
+        box-sizing: border-box;
+    }
+
+    .btn-success {
+        border: 2px solid #4CAF50;
+    }
+
+    .btn-warning {
+        border: 2px solid #f44336;
+    }
+
+    .btn-width {
+        width: 100px;
     }
 </style>
 
@@ -42,13 +67,13 @@
         <p>Loading...</p>
     </div>
     <div class="page inactive app_not_allowed">
-        <a target="_blank" id="authorize_url" href="#">Authorize</a>
+        <a class="btn btn-success btn-width" target="_blank" id="authorize_url" href="#">Authorize</a>
     </div>
-    <div class="page inactive ready">
-        <img class="like" src="img/heart.png" alt="">
+    <div class="page inactive app_allowed">
+        <img class="like" src="img/heart-full.png" alt="">
     </div>
 
-    <a href="#" id="resetAccessToken">Reset token</a>
+    <button id="resetAccessToken" class="btn btn-warning btn-width">Reset token</button>
 </div>
 
 <script src="./consts.js"></script>
