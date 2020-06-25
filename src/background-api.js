@@ -52,6 +52,7 @@ function getYoutubeId(url) {
 
 async function updateUrlInfo(url) {
     //url = prepareUrl(url);
+    const getLoginApi = backgroundWindow.getLoginApi;
     console.log('Url', url)
     if (timeout) {
         clearTimeout(timeout);
@@ -64,8 +65,6 @@ async function updateUrlInfo(url) {
         return;
     }
 
-    const urlHash = await backgroundWindow.getLoginApi.keccak256(url);
-    console.log('urlHash', urlHash);
     let data;
     let usernameHash;
     if (getStatus() === STATUS_APP_ALLOWED && userInfo.usernameHash) {
@@ -77,14 +76,16 @@ async function updateUrlInfo(url) {
         return;
     }
 
-    backgroundWindow.getLoginApi.setClientAbi(likeLogicAbi);
+    const urlHash = await getLoginApi.keccak256(url);
+    console.log('urlHash', urlHash);
+    getLoginApi.setClientAbi(likeLogicAbi);
     if (isYoutubeUrl(url)) {
         const id = getYoutubeId(url);
-        const idHash = await backgroundWindow.getLoginApi.keccak256(id);
+        const idHash = await getLoginApi.keccak256(id);
         console.log('youtube id hash', id, idHash);
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', usernameHash, youtubeResourceTypeId, idHash);
+        data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', usernameHash, youtubeResourceTypeId, idHash);
     } else {
-        data = await backgroundWindow.getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
+        data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
     }
 
     console.log(data);
@@ -160,7 +161,6 @@ function onReceiveUrlInfo(url, tabId) {
 
     currentUrl = url;
     checkAndStoreAccessToken(url);
-
     updateUrlInfo(url).then();
 }
 
@@ -170,6 +170,7 @@ function resetAccessToken() {
     setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
 }
 
+// todo change browser icon liked/unliked immediatly + increase counter
 async function toggleLike(message) {
     const url = message.url;
     if (isBadUrl(url)) {
