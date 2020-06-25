@@ -53,7 +53,8 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
         state = message.data;
         setStatus(state.status, state.status_data);
         if (state.currentPageInfo) {
-            document.querySelector('.like').setAttribute('src', state.currentPageInfo.isLiked ? 'img/heart-full-liked.png' : 'img/heart-full.png');
+            const image = state.currentPageInfo.isLiked ? 'img/heart-full-liked.png' : 'img/heart-full.png';
+            document.querySelector('.like').setAttribute('src', image);
         }
     }
 });

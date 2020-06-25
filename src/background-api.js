@@ -94,13 +94,14 @@ async function updateUrlInfo(url) {
     }
 
     console.log(data);
-    setState({...state, currentPageInfo: {isLiked: data.isLiked}});
-    if (data.isLiked) {
-        chrome.browserAction.setIcon({path: "img/heart-liked.png"});
-    } else {
-        chrome.browserAction.setIcon({path: "img/heart.png"});
-    }
-
+    setState({
+        ...state,
+        currentPageInfo: {
+            isLiked: data.isLiked,
+            reactions: Number(data.resourceStatistics.reactions)
+        }
+    });
+    chrome.browserAction.setIcon({path: data.isLiked ? "img/heart-liked.png" : "img/heart.png"});
     chrome.browserAction.setBadgeText({text: String(data.resourceStatistics.reactions)});
 }
 
@@ -194,7 +195,6 @@ function resetAccessToken() {
     setStatus(STATUS_APP_NOT_ALLOWED, {url: backgroundWindow.getLoginApi.getAuthorizeUrl()});
 }
 
-// todo change browser icon liked/unliked immediatly + increase counter
 async function toggleLike(message) {
     const getLoginApi = backgroundWindow.getLoginApi;
     const url = message.url;
@@ -203,7 +203,16 @@ async function toggleLike(message) {
         return;
     }
 
-    setState({...state, currentPageInfo: {isLiked: !state.currentPageInfo.isLiked}});
+    const isLiked = !state.currentPageInfo.isLiked;
+    const newCurrentPageInfo = {...state.currentPageInfo, isLiked};
+    setState({...state, currentPageInfo: newCurrentPageInfo});
+    chrome.browserAction.setIcon({path: isLiked ? "img/heart-liked.png" : "img/heart.png"});
+    const reactions = state.currentPageInfo.reactions ? state.currentPageInfo.reactions : 0;
+    if (isLiked) {
+        chrome.browserAction.setBadgeText({text: String(reactions + 1)});
+    } else {
+        chrome.browserAction.setBadgeText({text: String(reactions > 0 ? reactions - 1 : 0)});
+    }
     const urlHash = await getLoginApi.keccak256(url);
     let data;
     let response = {};
