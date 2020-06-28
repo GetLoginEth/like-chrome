@@ -11,7 +11,7 @@ module.exports = {
         'background-api': './src/background-api.js',
         consts: './src/consts.js',
         content: './src/content.js',
-        GetLoginApi: './src/GetLoginApi.js',
+        GetLoginApi: './node_modules/@getlogin/login/public/api/last.js',
         popup: './src/popup.js',
     },
     output: {

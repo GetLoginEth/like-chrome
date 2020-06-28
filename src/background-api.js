@@ -12,13 +12,16 @@ import likeLogic from '@getlogin/like/web/LikeLogicAbi.json';
 import likeStorage from '@getlogin/like/web/LikeStorageAbi.json';
 
 const backgroundWindow = chrome.extension.getBackgroundPage();
-const getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
+//const getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
+const getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
 const redirectUrl = 'https://example.com/';
 const youtubeResourceTypeId = 1;
 const appId = 3;
 const likeLogicAbi = likeLogic.abi;
 const likeStorageAbi = likeStorage.abi;
 const likeStorageAddress = likeStorage.address;
+const emptyHash = '0x000000000000000000000000000000000000000000000000000000';
+const emptyWallet = '0x0000000000000000000000000000000000000000';
 
 let accessToken = null;
 let likeLogicAddress = null;
@@ -75,7 +78,7 @@ async function updateUrlInfo(url) {
     if (getStatus() === STATUS_APP_ALLOWED && userInfo.usernameHash) {
         usernameHash = userInfo.usernameHash
     } else if (getStatus() === STATUS_APP_NOT_ALLOWED) {
-        usernameHash = '0x000000000000000000000000000000000000000000000000000000';
+        usernameHash = emptyHash;
     } else {
         console.log('App status is not correct to receive like info', getStatus());
         return;
@@ -103,6 +106,9 @@ async function updateUrlInfo(url) {
     });
     chrome.browserAction.setIcon({path: data.isLiked ? "img/heart-liked.png" : "img/heart.png"});
     chrome.browserAction.setBadgeText({text: String(data.resourceStatistics.reactions)});
+    /*getLoginApi.getAccessTokenBalance().then(balance => {
+        console.log('balance', balance);
+    });*/
 }
 
 function setStatus(status, data = {}) {
@@ -224,14 +230,14 @@ async function toggleLike(message) {
         if (data.isLiked) {
             response = await getLoginApi.sendTransaction(likeLogicAddress, 'unlike', [youtubeResourceTypeId, idHash], {resolveMethod: 'mined'})
         } else {
-            response = await getLoginApi.sendTransaction(likeLogicAddress, 'like', [youtubeResourceTypeId, idHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'like', [youtubeResourceTypeId, idHash, emptyWallet], {resolveMethod: 'mined'})
         }
     } else {
         data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', userInfo.usernameHash, urlHash);
         if (data.isLiked) {
             response = await getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
         } else {
-            response = await getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, emptyWallet], {resolveMethod: 'mined'})
         }
     }
 

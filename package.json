@@ -8,7 +8,8 @@
     "deploy": "webpack --mode production && cd build && tar cf build.tar . && mv build.tar ../build.tar && cd .. && curl -X POST -H \"Content-Type: application/x-tar\" --data-binary @build.tar https://swarm-gateways.net/bzz:/ > hash.txt"
   },
   "dependencies": {
-    "@getlogin/like": "https://github.com/GetLoginEth/like.git"
+    "@getlogin/like": "https://github.com/GetLoginEth/like.git",
+    "@getlogin/login": "https://github.com/GetLoginEth/login.git"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
