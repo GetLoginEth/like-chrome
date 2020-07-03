@@ -12,8 +12,8 @@ import likeLogic from '@getlogin/like/web/LikeLogicAbi.json';
 import likeStorage from '@getlogin/like/web/LikeStorageAbi.json';
 
 const backgroundWindow = chrome.extension.getBackgroundPage();
-//const getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
-const getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
+const getLoginUrl = 'https://getlogin.swarm-gateways.net/';
+//const getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
 const redirectUrl = 'https://example.com/';
 const youtubeResourceTypeId = 1;
 const appId = 3;
