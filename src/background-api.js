@@ -5,7 +5,7 @@ import {
     TYPE_GET_STATE,
     TYPE_RESET_ACCESS_TOKEN,
     TYPE_TOGGLE_LIKE,
-    TYPE_UPDATE_STATE
+    TYPE_UPDATE_STATE, TYPE_UPDATE_URL_INFO
 } from "./consts";
 
 import likeLogic from '@getlogin/like/web/LikeLogicAbi.json';
@@ -303,6 +303,17 @@ chrome.tabs.onUpdated.addListener(function (tabId) {
     });
 });
 
+// when extension icon clicked (https://developer.chrome.com/extensions/activeTab)
+// not work if popup exists
+/*chrome.browserAction.onClicked.addListener(function (tab) {
+    console.log('On extension icon clicked', tab);
+    if (!tab) {
+        return;
+    }
+
+    onReceiveUrlInfo(tab.url, tab.id);
+});*/
+
 // receive messages from UI
 chrome.extension.onMessage.addListener(async function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
@@ -313,7 +324,9 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         toggleLike(message);
     } else if (type === TYPE_GET_STATE) {
         setState(state);
-    }
+    } /*else if (type === TYPE_UPDATE_URL_INFO) {
+
+    }*/
 });
 
 setStatus(STATUS_WAIT_GETLOGIN);

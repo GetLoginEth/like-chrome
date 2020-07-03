@@ -5,7 +5,7 @@ import {
     TYPE_GET_STATE,
     TYPE_RESET_ACCESS_TOKEN,
     TYPE_TOGGLE_LIKE,
-    TYPE_UPDATE_STATE
+    TYPE_UPDATE_STATE, TYPE_UPDATE_URL_INFO
 } from "./consts";
 
 let state = {};
@@ -64,3 +64,4 @@ document.querySelector('#resetAccessToken').onclick = onResetAccessToken;
 
 setStatus(STATUS_NONE);
 chrome.runtime.sendMessage({type: TYPE_GET_STATE});
+//chrome.runtime.sendMessage({type: TYPE_UPDATE_URL_INFO});
