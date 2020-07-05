@@ -3,7 +3,7 @@ import {
     STATUS_APP_NOT_ALLOWED,
     STATUS_NONE,
     TYPE_GET_STATE,
-    TYPE_RESET_ACCESS_TOKEN,
+    TYPE_RESET_ACCESS_TOKEN, TYPE_SET_DONATE,
     TYPE_TOGGLE_LIKE,
     TYPE_UPDATE_STATE, TYPE_UPDATE_URL_INFO
 } from "./consts";
@@ -59,8 +59,20 @@ function onCloseDonate(e) {
 
 function onAddDonate(e) {
     e.preventDefault();
-    // todo validate donate value, store donate value, display plus donate icon
     openDonate(false);
+    const donateValue = document.querySelector('.input-donate').value;
+    if (!donateValue) {
+        // todo show error
+        return;
+    }
+
+    // todo send donate to back script with current url
+    // todo change donate btn for current url
+    chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        const url = tabs[0].url;
+        console.log('result url', url);
+        chrome.runtime.sendMessage({type: TYPE_SET_DONATE, url, donateValue});
+    });
 }
 
 function openDonate(isOpen) {
@@ -75,6 +87,17 @@ function openDonate(isOpen) {
     });
 }
 
+function showDonateButton(isShow) {
+    const addDonate = document.querySelector('.add-donate');
+    if (isShow) {
+        addDonate.classList.add('active-donate');
+        addDonate.classList.remove('inactive-donate');
+    } else {
+        addDonate.classList.remove('active-donate');
+        addDonate.classList.add('inactive-donate');
+    }
+}
+
 chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
     if (message.type === TYPE_UPDATE_STATE) {
@@ -85,13 +108,24 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             document.querySelector('.like').setAttribute('src', image);
         }
 
+        // todo remove donate icon if site author hasn't donate address
+        const inputDonate = document.querySelector('.input-donate');
         if (state.balance && state.balance.balanceWeb) {
             document.querySelector('.tokenBalance').innerText = state.balance.balanceWeb;
-            const inputDonate = document.querySelector('.input-donate');
             if (!inputDonate.value && Number(state.balance.balanceWeb) > 0) {
                 inputDonate.value = Number(state.balance.balanceWeb) / 10;
             }
         }
+
+        chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+            const url = tabs[0].url;
+            if (state.donates[url]) {
+                inputDonate.value = state.donates[url]
+                showDonateButton(true);
+            } else {
+                showDonateButton(false);
+            }
+        });
     }
 });
 

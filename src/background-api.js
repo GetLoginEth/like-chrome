@@ -5,7 +5,9 @@ import {
     TYPE_GET_STATE,
     TYPE_RESET_ACCESS_TOKEN,
     TYPE_TOGGLE_LIKE,
-    TYPE_UPDATE_STATE, TYPE_UPDATE_URL_INFO
+    TYPE_UPDATE_STATE,
+    //TYPE_UPDATE_URL_INFO,
+    TYPE_SET_DONATE
 } from "./consts";
 
 import likeLogic from '@getlogin/like/web/LikeLogicAbi.json';
@@ -29,7 +31,8 @@ let timeout = null;
 let userInfo = {};
 let state = {
     currentPageInfo: {},
-    balance: {}
+    balance: {},
+    donates: {}
 };
 // for preventing double loading while one url loaded
 let currentUrl = '';
@@ -337,6 +340,8 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         toggleLike(message);
     } else if (type === TYPE_GET_STATE) {
         setState(state);
+    } else if (type === TYPE_SET_DONATE && message.url) {
+        setState({...state, donates: {...state.donates, [message.url]: message.donateValue}})
     } /*else if (type === TYPE_UPDATE_URL_INFO) {
 
     }*/
