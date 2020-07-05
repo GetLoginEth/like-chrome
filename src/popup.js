@@ -56,6 +56,10 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             const image = state.currentPageInfo.isLiked ? 'img/heart-full-liked.png' : 'img/heart-full.png';
             document.querySelector('.like').setAttribute('src', image);
         }
+
+        if (state.balance && state.balance.balanceWeb) {
+            document.querySelector('.tokenBalance').innerText = state.balance.balanceWeb;
+        }
     }
 });
 

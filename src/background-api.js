@@ -28,10 +28,25 @@ let likeLogicAddress = null;
 let timeout = null;
 let userInfo = {};
 let state = {
-    currentPageInfo: {}
+    currentPageInfo: {},
+    balance: {}
 };
 // for preventing double loading while one url loaded
 let currentUrl = '';
+
+async function updateBalance() {
+    const getLoginApi = backgroundWindow.getLoginApi;
+    if (!getLoginApi || !getLoginApi.isReady()) {
+        return;
+    }
+
+    const balance = await backgroundWindow.getLoginApi.getAccessTokenBalance()
+    console.log('balance', balance);
+    setState({
+        ...state,
+        balance
+    });
+}
 
 function resetBadge() {
     chrome.browserAction.setIcon({path: "img/heart-wait.png"});
@@ -56,7 +71,7 @@ function getYoutubeId(url) {
 async function updateUrlInfo(url) {
     //url = prepareUrl(url);
     const getLoginApi = backgroundWindow.getLoginApi;
-    if (!getLoginApi.isReady()) {
+    if (!getLoginApi || !getLoginApi.isReady()) {
         console.log('getLogin not ready');
         return;
     }
@@ -106,9 +121,6 @@ async function updateUrlInfo(url) {
     });
     chrome.browserAction.setIcon({path: data.isLiked ? "img/heart-liked.png" : "img/heart.png"});
     chrome.browserAction.setBadgeText({text: String(data.resourceStatistics.reactions)});
-    /*getLoginApi.getAccessTokenBalance().then(balance => {
-        console.log('balance', balance);
-    });*/
 }
 
 function setStatus(status, data = {}) {
@@ -282,6 +294,7 @@ backgroundWindow._onGetLoginApiLoaded = async (instance) => {
     });
 };
 
+// todo disable like button is page not likable
 // todo check why info updated when not active tab updated (for example, yandex music)
 // fires when the active tab in a window changes
 chrome.tabs.onActivated.addListener(function (activeInfo) {
@@ -330,3 +343,7 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
 });
 
 setStatus(STATUS_WAIT_GETLOGIN);
+updateBalance();
+setInterval(_ => {
+    updateBalance();
+}, 5000)
