@@ -47,6 +47,34 @@ function onResetAccessToken(e) {
     }
 }
 
+function onOpenDonate(e) {
+    e.preventDefault();
+    openDonate(true);
+}
+
+function onCloseDonate(e) {
+    e.preventDefault();
+    openDonate(false);
+}
+
+function onAddDonate(e) {
+    e.preventDefault();
+    // todo validate donate value, store donate value, display plus donate icon
+    openDonate(false);
+}
+
+function openDonate(isOpen) {
+    document.querySelectorAll('.subpage-donate').forEach(item => {
+        if (isOpen) {
+            item.classList.add('active');
+            item.classList.remove('inactive');
+        } else {
+            item.classList.remove('active');
+            item.classList.add('inactive');
+        }
+    });
+}
+
 chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
     if (message.type === TYPE_UPDATE_STATE) {
@@ -59,12 +87,24 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
 
         if (state.balance && state.balance.balanceWeb) {
             document.querySelector('.tokenBalance').innerText = state.balance.balanceWeb;
+            const inputDonate = document.querySelector('.input-donate');
+            if (!inputDonate.value && Number(state.balance.balanceWeb) > 0) {
+                inputDonate.value = Number(state.balance.balanceWeb) / 10;
+            }
         }
     }
 });
 
+openDonate(false);
+document.querySelectorAll('.subpage-donate').forEach(item => {
+    item.classList.remove('active');
+    item.classList.add('inactive');
+});
 document.querySelector('.like').onclick = onLike;
 document.querySelector('#resetAccessToken').onclick = onResetAccessToken;
+document.querySelector('.add-donate').onclick = onOpenDonate;
+document.querySelector('.close-donate').onclick = onCloseDonate;
+document.querySelector('.add-donate-btn').onclick = onAddDonate;
 
 setStatus(STATUS_NONE);
 chrome.runtime.sendMessage({type: TYPE_GET_STATE});

@@ -20,6 +20,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
     }
 
     .like {
@@ -57,6 +58,54 @@
     .btn-width {
         width: 100px;
     }
+
+    .add-donate {
+        position: absolute;
+        top: 47px;
+        left: 80px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .inactive-donate {
+        opacity: 0.5;
+    }
+
+    .active-donate {
+        opacity: 1;
+    }
+
+    .subpage-donate {
+        padding-top: 0px;
+        display: flex;
+        justify-content: start;
+        flex-direction: column;
+        line-height: 20px;
+        z-index: 1;
+    }
+
+    .close-donate {
+        position: absolute;
+        top: -15px;
+        right: 0px;
+        font-size: 30px;
+        cursor: pointer;
+        line-height: 45px;
+    }
+
+    .add-donate-btn {
+        margin-top: 8px;
+    }
+
+    .subpage {
+        top: 8px;
+        left: 8px;
+        position: absolute;
+        background-color: white;
+        width: 100px;
+        height: 100px;
+    }
 </style>
 
 <div class="pages">
@@ -69,9 +118,16 @@
     <div class="page inactive app_not_allowed">
         <a class="btn btn-success btn-width" target="_blank" id="authorize_url" href="#">Authorize</a>
     </div>
-    <div class="page inactive app_allowed">
+    <div class="page active app_allowed">
         <img class="like" src="img/heart-full.png" alt="">
-        <div class="tokenBalance"></div>
+        <img class="add-donate inactive-donate" src="img/plus.png" alt="">
+        <div class="subpage active subpage-donate">
+            <div class="close-donate">&times;</div>
+            <strong>Add donate</strong>
+            <div class="tokenBalance">0.1111 ETH</div>
+            <input class="input-donate" type="text" value="">
+            <button class="btn btn-success btn-width add-donate-btn">Add</button>
+        </div>
     </div>
 
     <button id="resetAccessToken" class="btn btn-warning btn-width">Reset token</button>
