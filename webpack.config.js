@@ -35,6 +35,7 @@ module.exports = {
                 {from: 'src/img', to: 'img'},
                 {from: 'src/**.html', to: '', flatten: true,},
                 {from: 'src/manifest.json', to: '',},
+                {from: './node_modules/bootstrap/dist/css/bootstrap.min.css', to: '',},
             ],
         }),
         // new webpack.SourceMapDevToolPlugin({})

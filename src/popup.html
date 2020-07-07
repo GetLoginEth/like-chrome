@@ -1,10 +1,36 @@
+<link rel="stylesheet" href="bootstrap.min.css">
 <style>
     body {
-        width: 100px;
+        /* todo change width height dynamically if needed */
+        width: 150px;
         height: 100px;
     }
 
-    .pages {
+    .like {
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+    }
+
+    .add-donate {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .active {
+        display: block;
+    }
+
+    .inactive {
+        display: none !important;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    /*.pages {
         width: 100%;
     }
 
@@ -29,7 +55,7 @@
         cursor: pointer;
     }
 
-    #resetAccessToken {
+    .reset-access-token {
         position: absolute;
         bottom: 8px;
     }
@@ -105,10 +131,10 @@
         background-color: white;
         width: 100px;
         height: 100px;
-    }
+    }*/
 </style>
 
-<div class="pages">
+<div class="pages container">
     <div class="page inactive none">
         <p>Loading...</p>
     </div>
@@ -121,7 +147,7 @@
     <div class="page active app_allowed">
         <img class="like" src="img/heart-full.png" alt="">
         <img class="add-donate inactive-donate" src="img/plus.png" alt="">
-        <div class="subpage active subpage-donate">
+        <div class="subpage inactive subpage-donate">
             <div class="close-donate">&times;</div>
             <strong>Add donate</strong>
             <div class="tokenBalance">0.1111 ETH</div>
@@ -130,7 +156,7 @@
         </div>
     </div>
 
-    <button id="resetAccessToken" class="btn btn-warning btn-width">Reset token</button>
+    <button class="btn btn-sm btn-outline-danger btn-block mt-3 reset-access-token">Reset token</button>
 </div>
 
 <script src="./consts.js"></script>

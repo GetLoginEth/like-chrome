@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@getlogin/like": "https://github.com/GetLoginEth/like.git",
-    "@getlogin/login": "https://github.com/GetLoginEth/login.git"
+    "@getlogin/login": "https://github.com/GetLoginEth/login.git",
+    "bootstrap": "^4.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",

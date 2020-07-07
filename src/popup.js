@@ -1,11 +1,12 @@
-//const background = chrome.extension.getBackgroundPage();
 import {
     STATUS_APP_NOT_ALLOWED,
     STATUS_NONE,
     TYPE_GET_STATE,
-    TYPE_RESET_ACCESS_TOKEN, TYPE_SET_DONATE,
+    TYPE_RESET_ACCESS_TOKEN,
+    TYPE_SET_DONATE,
     TYPE_TOGGLE_LIKE,
-    TYPE_UPDATE_STATE, TYPE_UPDATE_URL_INFO
+    TYPE_UPDATE_STATE,
+    //TYPE_UPDATE_URL_INFO
 } from "./consts";
 
 let state = {};
@@ -15,9 +16,9 @@ function setStatus(newStatus, data = {}) {
     console.log('New status', newStatus);
     if (status === STATUS_APP_NOT_ALLOWED) {
         document.getElementById('authorize_url').href = data.url;
-        document.getElementById('resetAccessToken').style.display = 'none';
+        document.querySelector('.reset-access-token').style.display = 'none';
     } else {
-        document.getElementById('resetAccessToken').style.display = 'block';
+        document.querySelector('.reset-access-token').style.display = 'block';
     }
 
     document.querySelectorAll('.page').forEach(item => {
@@ -66,7 +67,6 @@ function onAddDonate(e) {
         return;
     }
 
-    // todo send donate to back script with current url
     // todo change donate btn for current url
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         const url = tabs[0].url;
@@ -135,7 +135,7 @@ document.querySelectorAll('.subpage-donate').forEach(item => {
     item.classList.add('inactive');
 });
 document.querySelector('.like').onclick = onLike;
-document.querySelector('#resetAccessToken').onclick = onResetAccessToken;
+document.querySelector('.reset-access-token').onclick = onResetAccessToken;
 document.querySelector('.add-donate').onclick = onOpenDonate;
 document.querySelector('.close-donate').onclick = onCloseDonate;
 document.querySelector('.add-donate-btn').onclick = onAddDonate;
