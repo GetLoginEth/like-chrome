@@ -2,6 +2,8 @@
 
 Extension based on project [Decentralized Like](https://github.com/GetLoginEth/like)
 
+Install last version from [Chrome Web Store](https://chrome.google.com/webstore/detail/like/ecobchpggelaiefdnfpbeokdgpbhelij).
+
 The extension allows you to make a decentralized like for any web resource. Also, you can see how many users also like this resource.
 
 In the extension, the definition of the YouTube video identifier is implemented in order to see the exact number of likes not based on the link, but on the basis of the video identifier.
