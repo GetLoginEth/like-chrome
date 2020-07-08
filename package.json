@@ -10,7 +10,9 @@
   "dependencies": {
     "@getlogin/like": "https://github.com/GetLoginEth/like.git",
     "@getlogin/login": "https://github.com/GetLoginEth/login.git",
-    "bootstrap": "^4.5.0"
+    "@popperjs/core": "^2.4.4",
+    "bootstrap": "^4.5.0",
+    "jquery": "^3.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",

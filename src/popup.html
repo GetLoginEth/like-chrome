@@ -1,20 +1,17 @@
 <link rel="stylesheet" href="bootstrap.min.css">
 <style>
     body {
-        /* todo change width height dynamically if needed */
-        width: 150px;
-        height: 100px;
+        width: 185px;
+        height: 150px;
     }
 
     .like {
-        width: 60px;
-        height: 60px;
+        width: 160px;
         cursor: pointer;
     }
 
-    .add-donate {
+    .settings-icon {
         width: 20px;
-        height: 20px;
         cursor: pointer;
     }
 
@@ -29,6 +26,34 @@
     .container {
         padding: 15px;
     }
+
+    .like-menu {
+        /*position: absolute;
+        top: 8px;
+        right: 8px;*/
+    }
+
+    .dropdown-menu {
+        min-width: 9rem;
+        font-size: 0.8rem
+    }
+
+    .dropdown-item {
+        padding: .25rem .8rem;
+    }
+
+    .like-container {
+        text-align: center;
+    }
+
+    /*.dropup .dropdown-menu {
+        left: -60px;
+    }*/
+
+    /*.footer-section {
+        display: flex;
+        justify-content: space-between;
+    }*/
 
     /*.pages {
         width: 100%;
@@ -145,19 +170,71 @@
         <a class="btn btn-success btn-width" target="_blank" id="authorize_url" href="#">Authorize</a>
     </div>
     <div class="page active app_allowed">
-        <img class="like" src="img/heart-full.png" alt="">
-        <img class="add-donate inactive-donate" src="img/plus.png" alt="">
-        <div class="subpage inactive subpage-donate">
-            <div class="close-donate">&times;</div>
-            <strong>Add donate</strong>
-            <div class="tokenBalance">0.1111 ETH</div>
-            <input class="input-donate" type="text" value="">
-            <button class="btn btn-success btn-width add-donate-btn">Add</button>
+        <div class="modal fade" id="addDonateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Donate</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Balance: 12.4431</p>
+                        <p>Add balance: 0.1234</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary">Reset</button>
+                        <button type="button" class="btn btn-sm btn-primary">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="like-container">
+            <img class="like" src="img/heart-full.png" alt="">
+        </div>
+        <!--<img class="add-donate inactive-donate" src="img/plus.png" alt="">-->
+        <div class="mt-2">
+            <button class="btn btn-block btn-sm btn-outline-info" data-toggle="modal" data-target="#addDonateModal">
+                Add donate
+            </button>
         </div>
     </div>
 
-    <button class="btn btn-sm btn-outline-danger btn-block mt-3 reset-access-token">Reset token</button>
+    <div class="subpage inactive subpage-donate">
+        <div class="close-donate">&times;</div>
+        <strong>Add donate</strong>
+        <div class="tokenBalance">0.1111 ETH</div>
+        <input class="input-donate" type="text" value="">
+        <button class="btn btn-success btn-width add-donate-btn">Add</button>
+    </div>
+
+    <div class="dropup btn-group btn-block mt-2">
+        <button class="btn btn-outline-success btn-sm dropdown-toggle"
+                type="button"
+                data-display="static"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Settings
+        </button>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" target="_blank" href="https://getlogin.swarm-gateways.net/">
+                Open GetLogin
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item reset-access-token">Sign out</button>
+        </div>
+    </div>
 </div>
 
+<!--<button class="btn btn-sm btn-outline-danger btn-block mt-3 reset-access-token">Reset token</button>-->
+
+
+<script src="./jquery.slim.min.js"></script>
+<script src="./popper.js"></script>
+<script src="./bootstrap.min.js"></script>
 <script src="./consts.js"></script>
 <script src="./popup.js"></script>

@@ -16,9 +16,12 @@ function setStatus(newStatus, data = {}) {
     console.log('New status', newStatus);
     if (status === STATUS_APP_NOT_ALLOWED) {
         document.getElementById('authorize_url').href = data.url;
-        document.querySelector('.reset-access-token').style.display = 'none';
+        //document.querySelector('.reset-access-token').style.display = 'none';
+        document.querySelector('.reset-access-token').classList.add('disabled');
     } else {
-        document.querySelector('.reset-access-token').style.display = 'block';
+        //document.querySelector('.reset-access-token').style.display = 'block';
+        document.querySelector('.reset-access-token').classList.remove('disabled');
+
     }
 
     document.querySelectorAll('.page').forEach(item => {

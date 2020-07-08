@@ -36,6 +36,9 @@ module.exports = {
                 {from: 'src/**.html', to: '', flatten: true,},
                 {from: 'src/manifest.json', to: '',},
                 {from: './node_modules/bootstrap/dist/css/bootstrap.min.css', to: '',},
+                {from: './node_modules/bootstrap/dist/js/bootstrap.min.js', to: '',},
+                {from: './node_modules/popper.js/dist/umd/popper.js', to: '',},
+                {from: './node_modules/jquery/dist/jquery.slim.min.js', to: '',},
             ],
         }),
         // new webpack.SourceMapDevToolPlugin({})
