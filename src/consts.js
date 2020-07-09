@@ -10,3 +10,4 @@ export const TYPE_UPDATE_STATE = 'update_state';
 export const TYPE_TOGGLE_LIKE = 'toggle_like';
 export const TYPE_RESET_ACCESS_TOKEN = 'reset_access_token';
 export const TYPE_SET_DONATE = 'set_donate';
+export const TYPE_RESET_DONATE = 'reset_donate';

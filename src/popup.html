@@ -10,11 +10,6 @@
         cursor: pointer;
     }
 
-    .settings-icon {
-        width: 20px;
-        cursor: pointer;
-    }
-
     .active {
         display: block;
     }
@@ -25,12 +20,6 @@
 
     .container {
         padding: 15px;
-    }
-
-    .like-menu {
-        /*position: absolute;
-        top: 8px;
-        right: 8px;*/
     }
 
     .dropdown-menu {
@@ -181,12 +170,17 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Balance: 12.4431</p>
-                        <p>Add balance: 0.1234</p>
+                        <p>Balance: <span class="user-token-balance">0.0000</span></p>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">ETH</span>
+                            </div>
+                            <input type="text" class="form-control input-donate-balance" placeholder="0.1234" aria-label="ETH" aria-describedby="basic-addon1">
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-secondary">Reset</button>
-                        <button type="button" class="btn btn-sm btn-primary">Add</button>
+                        <button type="button" class="btn btn-sm btn-secondary btn-reset-donate" data-dismiss="modal">Reset</button>
+                        <button type="button" class="btn btn-sm btn-primary btn-add-donate" data-dismiss="modal">Add</button>
                     </div>
                 </div>
             </div>
@@ -197,18 +191,10 @@
         </div>
         <!--<img class="add-donate inactive-donate" src="img/plus.png" alt="">-->
         <div class="mt-2">
-            <button class="btn btn-block btn-sm btn-outline-info" data-toggle="modal" data-target="#addDonateModal">
+            <button class="btn btn-block btn-sm btn-outline-info btn-open-donate-modal" data-toggle="modal" data-target="#addDonateModal">
                 Add donate
             </button>
         </div>
-    </div>
-
-    <div class="subpage inactive subpage-donate">
-        <div class="close-donate">&times;</div>
-        <strong>Add donate</strong>
-        <div class="tokenBalance">0.1111 ETH</div>
-        <input class="input-donate" type="text" value="">
-        <button class="btn btn-success btn-width add-donate-btn">Add</button>
     </div>
 
     <div class="dropup btn-group btn-block mt-2">
@@ -229,9 +215,6 @@
         </div>
     </div>
 </div>
-
-<!--<button class="btn btn-sm btn-outline-danger btn-block mt-3 reset-access-token">Reset token</button>-->
-
 
 <script src="./jquery.slim.min.js"></script>
 <script src="./popper.js"></script>

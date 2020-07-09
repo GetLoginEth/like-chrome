@@ -51,19 +51,8 @@ function onResetAccessToken(e) {
     }
 }
 
-function onOpenDonate(e) {
-    e.preventDefault();
-    openDonate(true);
-}
-
-function onCloseDonate(e) {
-    e.preventDefault();
-    openDonate(false);
-}
-
 function onAddDonate(e) {
     e.preventDefault();
-    openDonate(false);
     const donateValue = document.querySelector('.input-donate').value;
     if (!donateValue) {
         // todo show error
@@ -78,27 +67,36 @@ function onAddDonate(e) {
     });
 }
 
-function openDonate(isOpen) {
-    document.querySelectorAll('.subpage-donate').forEach(item => {
-        if (isOpen) {
-            item.classList.add('active');
-            item.classList.remove('inactive');
-        } else {
-            item.classList.remove('active');
-            item.classList.add('inactive');
-        }
-    });
+function onResetDonate(e) {
+    e.preventDefault();
+    /*openDonate(false);
+    const donateValue = document.querySelector('.input-donate').value;
+    if (!donateValue) {
+        // todo show error
+        return;
+    }
+
+    // todo change donate btn for current url
+    chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        const url = tabs[0].url;
+        console.log('result url', url);
+        chrome.runtime.sendMessage({type: TYPE_SET_DONATE, url, donateValue});
+    });*/
 }
 
-function showDonateButton(isShow) {
-    const addDonate = document.querySelector('.add-donate');
+function showDonationAdded(isShow) {
+    const addDonate = document.querySelector('.btn-open-donate-modal');
     if (isShow) {
-        addDonate.classList.add('active-donate');
-        addDonate.classList.remove('inactive-donate');
+        addDonate.classList.add('donate-added');
+        addDonate.classList.remove('donate-not-added');
     } else {
-        addDonate.classList.remove('active-donate');
-        addDonate.classList.add('inactive-donate');
+        addDonate.classList.remove('donate-added');
+        addDonate.classList.add('donate-not-added');
     }
+}
+
+function disableDonationButton(isDisable) {
+    document.querySelector('.btn-open-donate-modal').disabled = isDisable;
 }
 
 chrome.extension.onMessage.addListener(function (message, messageSender, sendResponse) {
@@ -112,9 +110,13 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
         }
 
         // todo remove donate icon if site author hasn't donate address
-        const inputDonate = document.querySelector('.input-donate');
+        // todo disable is already liked
+        // todo show info about author if donation possible
+        disableDonationButton(true);
+
+        const inputDonate = document.querySelector('.input-donate-balance');
         if (state.balance && state.balance.balanceWeb) {
-            document.querySelector('.tokenBalance').innerText = state.balance.balanceWeb;
+            document.querySelector('.user-token-balance').innerText = state.balance.balanceWeb + ' ETH';
             if (!inputDonate.value && Number(state.balance.balanceWeb) > 0) {
                 inputDonate.value = Number(state.balance.balanceWeb) / 10;
             }
@@ -124,24 +126,22 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             const url = tabs[0].url;
             if (state.donates[url]) {
                 inputDonate.value = state.donates[url]
-                showDonateButton(true);
+                showDonationAdded(true);
             } else {
-                showDonateButton(false);
+                showDonationAdded(false);
             }
         });
     }
 });
 
-openDonate(false);
 document.querySelectorAll('.subpage-donate').forEach(item => {
     item.classList.remove('active');
     item.classList.add('inactive');
 });
 document.querySelector('.like').onclick = onLike;
 document.querySelector('.reset-access-token').onclick = onResetAccessToken;
-document.querySelector('.add-donate').onclick = onOpenDonate;
-document.querySelector('.close-donate').onclick = onCloseDonate;
-document.querySelector('.add-donate-btn').onclick = onAddDonate;
+document.querySelector('.btn-add-donate').onclick = onAddDonate;
+document.querySelector('.btn-reset-donate').onclick = onResetDonate;
 
 setStatus(STATUS_NONE);
 chrome.runtime.sendMessage({type: TYPE_GET_STATE});
