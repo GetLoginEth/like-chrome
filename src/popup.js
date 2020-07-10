@@ -5,8 +5,7 @@ import {
     TYPE_RESET_ACCESS_TOKEN,
     TYPE_SET_DONATE,
     TYPE_TOGGLE_LIKE,
-    TYPE_UPDATE_STATE,
-    //TYPE_UPDATE_URL_INFO
+    TYPE_UPDATE_STATE
 } from "./consts";
 
 let state = {};
@@ -16,12 +15,11 @@ function setStatus(newStatus, data = {}) {
     console.log('New status', newStatus);
     if (status === STATUS_APP_NOT_ALLOWED) {
         document.getElementById('authorize_url').href = data.url;
-        //document.querySelector('.reset-access-token').style.display = 'none';
         document.querySelector('.reset-access-token').classList.add('disabled');
+        document.querySelector('.settings-group').classList.add('invisible');
     } else {
-        //document.querySelector('.reset-access-token').style.display = 'block';
         document.querySelector('.reset-access-token').classList.remove('disabled');
-
+        document.querySelector('.settings-group').classList.remove('invisible');
     }
 
     document.querySelectorAll('.page').forEach(item => {
@@ -53,13 +51,12 @@ function onResetAccessToken(e) {
 
 function onAddDonate(e) {
     e.preventDefault();
-    const donateValue = document.querySelector('.input-donate').value;
+    const donateValue = document.querySelector('.input-donate-balance').value;
     if (!donateValue) {
         // todo show error
         return;
     }
 
-    // todo change donate btn for current url
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         const url = tabs[0].url;
         console.log('result url', url);
@@ -69,19 +66,12 @@ function onAddDonate(e) {
 
 function onResetDonate(e) {
     e.preventDefault();
-    /*openDonate(false);
-    const donateValue = document.querySelector('.input-donate').value;
-    if (!donateValue) {
-        // todo show error
-        return;
-    }
 
-    // todo change donate btn for current url
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         const url = tabs[0].url;
         console.log('result url', url);
-        chrome.runtime.sendMessage({type: TYPE_SET_DONATE, url, donateValue});
-    });*/
+        chrome.runtime.sendMessage({type: TYPE_SET_DONATE, url, donateValue: ''});
+    });
 }
 
 function showDonationAdded(isShow) {
@@ -109,9 +99,8 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             document.querySelector('.like').setAttribute('src', image);
         }
 
-        // todo remove donate icon if site author hasn't donate address
+        // todo remove donate icon if site author hasn't donate address (implement audthor donation check)
         // todo disable is already liked
-        // todo show info about author if donation possible
         disableDonationButton(true);
 
         const inputDonate = document.querySelector('.input-donate-balance');
@@ -134,10 +123,10 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
     }
 });
 
-document.querySelectorAll('.subpage-donate').forEach(item => {
+/*document.querySelectorAll('.subpage-donate').forEach(item => {
     item.classList.remove('active');
     item.classList.add('inactive');
-});
+});*/
 document.querySelector('.like').onclick = onLike;
 document.querySelector('.reset-access-token').onclick = onResetAccessToken;
 document.querySelector('.btn-add-donate').onclick = onAddDonate;
@@ -145,4 +134,3 @@ document.querySelector('.btn-reset-donate').onclick = onResetDonate;
 
 setStatus(STATUS_NONE);
 chrome.runtime.sendMessage({type: TYPE_GET_STATE});
-//chrome.runtime.sendMessage({type: TYPE_UPDATE_URL_INFO});

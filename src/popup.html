@@ -35,6 +35,25 @@
         text-align: center;
     }
 
+    .donate-not-added .donate-added-image {
+        display: none;
+    }
+
+    .donate-added .donate-added-image {
+        display: inline;
+    }
+
+    .donate-added-image {
+        width: 18px;
+    }
+
+    .btn-authorize {
+        position: absolute;
+        bottom: 8px;
+        margin: auto;
+        width: 90vw;
+    }
+
     /*.dropup .dropdown-menu {
         left: -60px;
     }*/
@@ -156,7 +175,7 @@
         <p>Loading...</p>
     </div>
     <div class="page inactive app_not_allowed">
-        <a class="btn btn-success btn-width" target="_blank" id="authorize_url" href="#">Authorize</a>
+        <a class="btn btn-success btn-width btn-block btn-authorize" target="_blank" id="authorize_url" href="#">Authorize</a>
     </div>
     <div class="page active app_allowed">
         <div class="modal fade" id="addDonateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -175,12 +194,16 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">ETH</span>
                             </div>
-                            <input type="text" class="form-control input-donate-balance" placeholder="0.1234" aria-label="ETH" aria-describedby="basic-addon1">
+                            <input type="text" class="form-control input-donate-balance" placeholder="0.1234"
+                                   aria-label="ETH" aria-describedby="basic-addon1">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-secondary btn-reset-donate" data-dismiss="modal">Reset</button>
-                        <button type="button" class="btn btn-sm btn-primary btn-add-donate" data-dismiss="modal">Add</button>
+                        <button type="button" class="btn btn-sm btn-secondary btn-reset-donate" data-dismiss="modal">
+                            Reset
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary btn-add-donate" data-dismiss="modal">Add
+                        </button>
                     </div>
                 </div>
             </div>
@@ -189,15 +212,16 @@
         <div class="like-container">
             <img class="like" src="img/heart-full.png" alt="">
         </div>
-        <!--<img class="add-donate inactive-donate" src="img/plus.png" alt="">-->
+
         <div class="mt-2">
-            <button class="btn btn-block btn-sm btn-outline-info btn-open-donate-modal" data-toggle="modal" data-target="#addDonateModal">
-                Add donate
+            <button class="btn btn-block btn-sm btn-outline-info btn-open-donate-modal donate-not-added"
+                    data-toggle="modal" data-target="#addDonateModal">
+                <img class="donate-added-image" src="img/ethereum.png" alt="">Add donate
             </button>
         </div>
     </div>
 
-    <div class="dropup btn-group btn-block mt-2">
+    <div class="dropup btn-group btn-block settings-group mt-2">
         <button class="btn btn-outline-success btn-sm dropdown-toggle"
                 type="button"
                 data-display="static"
