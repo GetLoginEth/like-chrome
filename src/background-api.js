@@ -32,7 +32,8 @@ let userInfo = {};
 let state = {
     currentPageInfo: {},
     balance: {},
-    donates: {}
+    donates: {},
+    donatesUrlInfo: {}
 };
 // for preventing double loading while one url loaded
 let currentUrl = '';
@@ -71,8 +72,11 @@ function getYoutubeId(url) {
     return (match && match[1].length == 11) ? match[1] : false;
 }
 
+async function isPossibleDonations(url) {
+    return url === "https://getlogin.swarm-gateways.net/";
+}
+
 async function updateUrlInfo(url) {
-    //url = prepareUrl(url);
     const getLoginApi = backgroundWindow.getLoginApi;
     if (!getLoginApi || !getLoginApi.isReady()) {
         console.log('getLogin not ready');
@@ -112,6 +116,18 @@ async function updateUrlInfo(url) {
         data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsResource', usernameHash, youtubeResourceTypeId, idHash);
     } else {
         data = await getLoginApi.callContractMethod(likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
+    }
+
+    if (await isPossibleDonations(url)) {
+        setState({
+            ...state, donatesUrlInfo: {
+                ...state.donatesUrlInfo, [url]: {
+                    isPossible: true,
+                    // todo set actual address received by username hash of owner
+                    donateAddress: '0x980F5aC0Fe183479B87f78E7892f8002fB9D5401'
+                }
+            }
+        });
     }
 
     console.log(data);
@@ -319,17 +335,6 @@ chrome.tabs.onUpdated.addListener(function (tabId) {
     });
 });
 
-// when extension icon clicked (https://developer.chrome.com/extensions/activeTab)
-// not work if popup exists
-/*chrome.browserAction.onClicked.addListener(function (tab) {
-    console.log('On extension icon clicked', tab);
-    if (!tab) {
-        return;
-    }
-
-    onReceiveUrlInfo(tab.url, tab.id);
-});*/
-
 // receive messages from UI
 chrome.extension.onMessage.addListener(async function (message, messageSender, sendResponse) {
     console.log(message, messageSender, sendResponse);
@@ -342,9 +347,7 @@ chrome.extension.onMessage.addListener(async function (message, messageSender, s
         setState(state);
     } else if (type === TYPE_SET_DONATE && message.url) {
         setState({...state, donates: {...state.donates, [message.url]: message.donateValue}})
-    } /*else if (type === TYPE_UPDATE_URL_INFO) {
-
-    }*/
+    }
 });
 
 setStatus(STATUS_WAIT_GETLOGIN);

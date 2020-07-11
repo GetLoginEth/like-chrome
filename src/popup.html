@@ -23,7 +23,7 @@
     }
 
     .dropdown-menu {
-        min-width: 9rem;
+        min-width: 9.7rem;
         font-size: 0.8rem
     }
 
@@ -48,10 +48,10 @@
     }
 
     .btn-authorize {
-        position: absolute;
+        /*position: absolute;
         bottom: 8px;
         margin: auto;
-        width: 90vw;
+        width: 90vw;*/
     }
 
     /*.dropup .dropdown-menu {
@@ -174,10 +174,18 @@
     <div class="page inactive wait_getlogin">
         <p>Loading...</p>
     </div>
-    <div class="page inactive app_not_allowed">
-        <a class="btn btn-success btn-width btn-block btn-authorize" target="_blank" id="authorize_url" href="#">Authorize</a>
+    <div class="page active app_not_allowed container">
+        <div class="fixed-top text-center mt-3">
+            <h3>GetLogin</h3>
+        </div>
+        <div class="fixed-bottom m-3">
+            <a class="btn btn-success btn-width btn-block btn-authorize" target="_blank" id="authorize_url"
+               href="#">
+                Authorize
+            </a>
+        </div>
     </div>
-    <div class="page active app_allowed">
+    <div class="page inactive app_allowed">
         <div class="modal fade" id="addDonateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">

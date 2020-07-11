@@ -101,7 +101,6 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
 
         // todo remove donate icon if site author hasn't donate address (implement audthor donation check)
         // todo disable is already liked
-        disableDonationButton(true);
 
         const inputDonate = document.querySelector('.input-donate-balance');
         if (state.balance && state.balance.balanceWeb) {
@@ -119,14 +118,12 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             } else {
                 showDonationAdded(false);
             }
+
+            disableDonationButton(!(state.donatesUrlInfo[url] && state.donatesUrlInfo[url].isPossible));
         });
     }
 });
 
-/*document.querySelectorAll('.subpage-donate').forEach(item => {
-    item.classList.remove('active');
-    item.classList.add('inactive');
-});*/
 document.querySelector('.like').onclick = onLike;
 document.querySelector('.reset-access-token').onclick = onResetAccessToken;
 document.querySelector('.btn-add-donate').onclick = onAddDonate;
