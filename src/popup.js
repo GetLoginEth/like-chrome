@@ -106,7 +106,7 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
         if (state.balance && state.balance.balanceWeb) {
             document.querySelector('.user-token-balance').innerText = state.balance.balanceWeb + ' ETH';
             if (!inputDonate.value && Number(state.balance.balanceWeb) > 0) {
-                inputDonate.value = Number(state.balance.balanceWeb) / 10;
+                inputDonate.value = (Number(state.balance.balanceWeb) / 10).toFixed(4);
             }
         }
 

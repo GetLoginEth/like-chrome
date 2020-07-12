@@ -44,12 +44,16 @@ async function updateBalance() {
         return;
     }
 
-    const balance = await backgroundWindow.getLoginApi.getAccessTokenBalance()
-    console.log('balance', balance);
-    setState({
-        ...state,
-        balance
-    });
+    try {
+        const balance = await backgroundWindow.getLoginApi.getAccessTokenBalance()
+        console.log('balance', balance);
+        setState({
+            ...state,
+            balance
+        });
+    } catch (e) {
+        console.log('Cannot receive balance', e)
+    }
 }
 
 function resetBadge() {
