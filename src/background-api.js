@@ -6,7 +6,6 @@ import {
     TYPE_RESET_ACCESS_TOKEN,
     TYPE_TOGGLE_LIKE,
     TYPE_UPDATE_STATE,
-    //TYPE_UPDATE_URL_INFO,
     TYPE_SET_DONATE
 } from "./consts";
 
@@ -15,7 +14,7 @@ import likeStorage from '@getlogin/like/web/LikeStorageAbi.json';
 
 const backgroundWindow = chrome.extension.getBackgroundPage();
 const getLoginUrl = 'https://getlogin.swarm-gateways.net/';
-//const getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
+//const getLoginUrl = 'https://getlogin.localhost:3000/';
 const redirectUrl = 'https://example.com/';
 const youtubeResourceTypeId = 1;
 const appId = 3;
@@ -25,6 +24,8 @@ const likeStorageAddress = likeStorage.address;
 const emptyHash = '0x000000000000000000000000000000000000000000000000000000';
 const emptyWallet = '0x0000000000000000000000000000000000000000';
 
+// for preventing double loading while one url loaded
+let currentUrl = '';
 let accessToken = null;
 let likeLogicAddress = null;
 let timeout = null;
@@ -32,11 +33,10 @@ let userInfo = {};
 let state = {
     currentPageInfo: {},
     balance: {},
+    // todo merge two donates params
     donates: {},
     donatesUrlInfo: {}
 };
-// for preventing double loading while one url loaded
-let currentUrl = '';
 
 async function updateBalance() {
     const getLoginApi = backgroundWindow.getLoginApi;
@@ -95,7 +95,7 @@ async function updateUrlInfo(url) {
     resetBadge();
 
     if (isBadUrl(url)) {
-        console.log('Empty url. Cancel receiving info')
+        //console.log('Empty url. Cancel receiving info')
         return;
     }
 
@@ -178,18 +178,7 @@ function checkAndStoreAccessToken(url, tabId) {
         try {
             parseAndSetAccessToken(url);
             try {
-                //console.log('Try to remove tab', tabId);
-
-                /*function callback(entry) {
-                    console.log('remove callback', entry, chrome.runtime.lastError);
-                    if (chrome.runtime.lastError) {
-                        console.log(chrome.runtime.lastError.message);
-                    } else {
-                        // Tab exists
-                    }
-                }*/
-
-                chrome.tabs.remove(tabId/*, callback*/);
+                chrome.tabs.remove(tabId);
             } catch (e) {
 
             }
@@ -256,7 +245,7 @@ async function toggleLike(message) {
     }
     const urlHash = await getLoginApi.keccak256(url);
     let data;
-    let response = {};
+    let response;
 
     if (isYoutubeUrl(url)) {
         const id = getYoutubeId(url);
@@ -272,7 +261,17 @@ async function toggleLike(message) {
         if (data.isLiked) {
             response = await getLoginApi.sendTransaction(likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
         } else {
-            response = await getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, emptyWallet], {resolveMethod: 'mined'})
+            const donateInfo = state.donatesUrlInfo[url];
+            let donateAddress = emptyWallet;
+            const donateSum = state.donates[url];
+            if (donateInfo.isPossible && donateInfo.donateAddress && donateSum) {
+                donateAddress = donateInfo.donateAddress;
+            }
+
+            response = await getLoginApi.sendTransaction(likeLogicAddress, 'likeUrl', [urlHash, donateAddress], {
+                resolveMethod: 'mined',
+                ether: donateSum
+            });
         }
     }
 

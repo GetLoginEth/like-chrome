@@ -99,9 +99,6 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
             document.querySelector('.like').setAttribute('src', image);
         }
 
-        // todo remove donate icon if site author hasn't donate address (implement audthor donation check)
-        // todo disable is already liked
-
         const inputDonate = document.querySelector('.input-donate-balance');
         if (state.balance && state.balance.balanceWeb) {
             document.querySelector('.user-token-balance').innerText = state.balance.balanceWeb + ' ETH';
@@ -119,7 +116,12 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
                 showDonationAdded(false);
             }
 
-            disableDonationButton(!(state.donatesUrlInfo[url] && state.donatesUrlInfo[url].isPossible));
+            // todo implement author donation check
+            if (state.currentPageInfo.isLiked) {
+                disableDonationButton(true);
+            } else {
+                disableDonationButton(!(state.donatesUrlInfo[url] && state.donatesUrlInfo[url].isPossible));
+            }
         });
     }
 });
