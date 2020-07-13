@@ -1,4 +1,5 @@
 import {
+    STATUS_APP_ALLOWED,
     STATUS_APP_NOT_ALLOWED,
     STATUS_NONE,
     TYPE_GET_STATE,
@@ -17,7 +18,7 @@ function setStatus(newStatus, data = {}) {
         document.getElementById('authorize_url').href = data.url;
         document.querySelector('.reset-access-token').classList.add('disabled');
         document.querySelector('.settings-group').classList.add('invisible');
-    } else {
+    } else if (status === STATUS_APP_ALLOWED) {
         document.querySelector('.reset-access-token').classList.remove('disabled');
         document.querySelector('.settings-group').classList.remove('invisible');
     }
@@ -126,6 +127,7 @@ chrome.extension.onMessage.addListener(function (message, messageSender, sendRes
     }
 });
 
+document.querySelector('.settings-group').classList.add('invisible');
 document.querySelector('.like').onclick = onLike;
 document.querySelector('.reset-access-token').onclick = onResetAccessToken;
 document.querySelector('.btn-add-donate').onclick = onAddDonate;
