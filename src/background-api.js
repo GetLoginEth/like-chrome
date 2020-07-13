@@ -272,6 +272,9 @@ async function toggleLike(message) {
                 resolveMethod: 'mined',
                 ether: donateSum
             });
+
+            // reset donate info after like
+            setState({...state, donates: {...state.donates, [url]: ''}})
         }
     }
 
